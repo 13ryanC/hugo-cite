@@ -80,12 +80,16 @@
 
 {{/* -------------------- BEGIN Bibliography path -------------------- */}}
 {{- $bibliographyPath := "" }}
+{{- $bibliography := slice -}}
+{{- $bibliographyLoaded := false -}}
 
 {{/* Default: check for a JSON file in the leaf bundle. */}}
 {{- $pageResource := $.Page.Resources.GetMatch "*bib*.json" -}}
 {{- if $pageResource }}
 {{- $constructedBibResource := printf "content/%s%s" $.Page.File.Dir $pageResource.Name }}
 {{- $bibliographyPath = $constructedBibResource }}
+{{- $bibliography = transform.Unmarshal $pageResource.Content -}}
+{{- $bibliographyLoaded = true -}}
 {{- end }}
 
 {{- /* If a `bibFile` is specified in the page front-matter, it takes precedence
@@ -93,10 +97,11 @@
 {{- /* `specifiedBib` must be relative to project root */ -}}
 {{- if $.Page.Params.bibFile }}
 {{- $bibliographyPath = $.Page.Params.bibFile -}}
+{{- $bibliography = readFile $bibliographyPath | transform.Unmarshal -}}
+{{- $bibliographyLoaded = true -}}
 {{- end }}
 
-{{- if gt (len $bibliographyPath) 0 -}}{{/* Begin Bibliography Loop */}}
-{{- $bibliography := getJSON $bibliographyPath -}}
+{{- if $bibliographyLoaded -}}{{/* Begin Bibliography Loop */}}
 {{- /* -------------------- END Bibliography path -------------------- */ -}}
 
   <span class="hugo-cite-intext"
